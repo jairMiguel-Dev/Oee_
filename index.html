@@ -3,333 +3,408 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de OEE - ArameSul</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Sistema Avançado de OEE - ArameSul</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        body {
-    font-family: 'Arial', sans-serif;
-    background: linear-gradient(120deg, #34495e, #2c3e50);
-    color: #ecf0f1;
-    margin: 0;
-    padding: 0;
-}
-
-header {
-    background: #16a085;
-    padding: 20px;
-    text-align: center;
-}
-
-h1 {
-    margin: 0;
-    font-size: 2.5rem;
-}
-
-.dashboard, .history, .charts {
-    padding: 20px;
-    width: 80%;
-    margin: 20px auto;
-}
-
-.card {
-    background: #2c3e50;
-    border-radius: 10px;
-    padding: 20px;
-    width: 22%;
-    margin: 10px auto;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s, background 0.3s;
-    text-align: center;
-}
-
-.card:hover {
-    transform: scale(1.05);
-    background: #34495e;
-}
-
-input, select, .button {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-    border-radius: 5px;
-    border: none;
-    transition: background-color 0.3s;
-}
-
-.button {
-    background: #1abc9c;
-    color: #ecf0f1;
-    cursor: pointer;
-    font-size: 1rem;
-}
-
-.button:hover {
-    background: #16a085;
-}
-
-.oee-result {
-    background: #1abc9c;
-    color: #ecf0f1;
-}
-
-#oee-value {
-    font-size: 2rem;
-}
-
-table {
-    width: 100%;
-    margin-top: 20px;
-    border-collapse: collapse;
-}
-
-table, th, td {
-    border: 1px solid #16a085;
-}
-
-th, td {
-    padding: 10px;
-    text-align: center;
-}
-
-th {
-    background: #16a085;
-    color: #ecf0f1;
-}
-
-tbody tr:nth-child(odd) {
-    background: #2c3e50;
-}
-
-tbody tr:nth-child(even) {
-    background: #34495e;
-}
-
-canvas {
-    background: #34495e;
-    border-radius: 10px;
-    padding: 20px;
-    max-width: 100%;
-}
-
-@media (max-width: 768px) {
-    .card {
-        width: 90%;
-    }
-
-    .dashboard, .history, .charts {
-        width: 100%;
-        padding: 10px;
-    }
-}
+        .custom-gradient {
+            background: linear-gradient(135deg, #1a5f7a, #086788);
+        }
+        .card {
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
     </style>
 </head>
-<body>
-    <header>
-        <h1>Sistema de OEE - ArameSul</h1>
+<body class="custom-gradient min-h-screen text-white">
+    <header class="bg-blue-900 p-4 shadow-lg">
+        <h1 class="text-3xl font-bold text-center">Sistema Avançado de OEE - ArameSul</h1>
     </header>
-    <main>
-        <section class="dashboard">
-            <!-- Seção de Seleção e Entrada de Dados -->
-            <div class="card">
-                <h2>Selecione a Máquina</h2>
-                <select id="maquinaSelect">
-                    <option value="Maquina 1">Maquina 1</option>
-                    <option value="Maquina 2">Maquina 2</option>
-                    <option value="Maquina 3">Maquina 3</option>
+    
+    <main class="container mx-auto mt-8 p-4">
+        <div class="grid md:grid-cols-3 gap-6">
+            <!-- Seção de Entrada de Dados -->
+            <div class="card p-6 rounded-lg shadow-xl">
+                <h2 class="text-xl font-semibold mb-4">Dados de Produção</h2>
+                <select id="maquinaSelect" class="w-full p-2 mb-4 bg-gray-700 rounded">
+                    <option value="">Selecione a Máquina</option>
+                    <option value="Maquina 1">Máquina 1</option>
+                    <option value="Maquina 2">Máquina 2</option>
+                    <option value="Maquina 3">Máquina 3</option>
                 </select>
-            </div>
-            <div class="card">
-                <h2>Selecione o Turno</h2>
-                <select id="turnoSelect">
+                <select id="turnoSelect" class="w-full p-2 mb-4 bg-gray-700 rounded">
+                    <option value="">Selecione o Turno</option>
                     <option value="Manhã">Manhã</option>
                     <option value="Tarde">Tarde</option>
                     <option value="Noite">Noite</option>
                 </select>
+                <input type="number" id="quantidadeProducao" placeholder="Quantidade Produzida" class="w-full p-2 mb-4 bg-gray-700 rounded">
+                <input type="number" id="tempoProducao" placeholder="Tempo de Produção (min)" class="w-full p-2 mb-4 bg-gray-700 rounded">
+                <input type="number" id="quantidadeSucata" placeholder="Quantidade de Sucata" class="w-full p-2 mb-4 bg-gray-700 rounded">
+                <input type="number" id="tempoPlanejado" placeholder="Tempo Planejado (min)" class="w-full p-2 mb-4 bg-gray-700 rounded">
+                <input type="number" id="capacidadeMaxima" placeholder="Capacidade Máxima" class="w-full p-2 mb-4 bg-gray-700 rounded">
+                <button id="calcularOEE" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300">
+                    Calcular OEE
+                </button>
             </div>
-            <div class="card">
-                <h2>Produção por Máquina</h2>
-                <input type="number" id="quantidadeProducao" placeholder="Quantidade Produzida">
+            
+            <!-- Resultados do OEE -->
+            <div class="card p-6 rounded-lg shadow-xl">
+                <h2 class="text-xl font-semibold mb-4">Resultados do OEE</h2>
+                <div id="oeeResults" class="space-y-4">
+                    <div class="flex justify-between">
+                        <span>Disponibilidade:</span>
+                        <span id="disponibilidade">0%</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Performance:</span>
+                        <span id="performance">0%</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Qualidade:</span>
+                        <span id="qualidade">0%</span>
+                    </div>
+                    <div class="flex justify-between font-bold text-lg">
+                        <span>OEE:</span>
+                        <span id="oeeTotal">0%</span>
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <canvas id="oeeChart"></canvas>
+                </div>
             </div>
-            <div class="card">
-                <h2>Tempo de Produção (em minutos)</h2>
-                <input type="number" id="tempoProducao" placeholder="Tempo Efetivo">
+            
+            <!-- Análise e Recomendações -->
+            <div class="card p-6 rounded-lg shadow-xl">
+                <h2 class="text-xl font-semibold mb-4">Análise e Recomendações</h2>
+                <div id="analiseRecomendacoes" class="space-y-4">
+                    <!-- Conteúdo gerado dinamicamente -->
+                </div>
             </div>
-            <div class="card">
-                <h2>Quantidade de Sucatas</h2>
-                <input type="number" id="quantidadeSucata" placeholder="Sucatas Geradas">
-            </div>
-            <div class="card">
-                <button id="calcularOEE" class="button">Calcular OEE</button>
-            </div>
-            <div class="card oee-result">
-                <h2>OEE</h2>
-                <p id="oee-value">0%</p>
-            </div>
-            <div class="card">
-                <button id="gerarPDF" class="button">Gerar Relatório PDF</button>
-            </div>
-        </section>
-
-        <!-- Histórico de OEE -->
-        <section class="history">
-            <h2>Histórico de OEE</h2>
-            <table id="historyTable">
-                <thead>
-                    <tr>
-                        <th>Máquina</th>
-                        <th>Turno</th>
-                        <th>Produção</th>
-                        <th>Tempo</th>
-                        <th>Sucatas</th>
-                        <th>OEE (%)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Dados dinamicamente inseridos aqui -->
-                </tbody>
-            </table>
-        </section>
+        </div>
         
-        <!-- Gráficos de OEE -->
-        <section class="charts">
-            <canvas id="oeeChart"></canvas>
-        </section>
+        <!-- Histórico e Tendências -->
+        <div class="mt-8 card p-6 rounded-lg shadow-xl">
+            <h2 class="text-xl font-semibold mb-4">Histórico e Tendências</h2>
+            <div class="overflow-x-auto">
+                <table id="historicoTable" class="w-full text-left">
+                    <thead>
+                        <tr class="bg-blue-900">
+                            <th class="p-3">Data</th>
+                            <th class="p-3">Máquina</th>
+                            <th class="p-3">Turno</th>
+                            <th class="p-3">OEE</th>
+                            <th class="p-3">Disponibilidade</th>
+                            <th class="p-3">Performance</th>
+                            <th class="p-3">Qualidade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dados preenchidos dinamicamente -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-6">
+                <canvas id="tendenciasChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Botões de Ação -->
+        <div class="mt-8 flex justify-center space-x-4">
+            <button id="gerarPDF" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-300">
+                Gerar Relatório PDF
+            </button>
+            <button id="exportarDados" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded transition duration-300">
+                Exportar Dados (CSV)
+            </button>
+        </div>
     </main>
-    <script src="app.js"></script>
+
     <script>
-        // Estrutura de dados para armazenar OEE
-let maquinas = {
-    'Maquina 1': [],
-    'Maquina 2': [],
-    'Maquina 3': []
-};
+    // Estrutura de dados para armazenar OEE
+    let historicoOEE = [];
+    let oeeChart, tendenciasChart;
 
-// Inicialização de gráficos
-let oeeChart = null;
-
-// Função para calcular o OEE
-document.getElementById('calcularOEE').addEventListener('click', function() {
-    const maquina = document.getElementById('maquinaSelect').value;
-    const turno = document.getElementById('turnoSelect').value;
-    const quantidadeProducao = parseFloat(document.getElementById('quantidadeProducao').value);
-    const tempoProducao = parseFloat(document.getElementById('tempoProducao').value);
-    const quantidadeSucata = parseFloat(document.getElementById('quantidadeSucata').value);
-
-    if (validateInputs(quantidadeProducao, tempoProducao, quantidadeSucata)) {
-        const oee = calcularOEE(quantidadeProducao, tempoProducao, quantidadeSucata);
-        document.getElementById('oee-value').innerText = `${oee.toFixed(2)}%`;
-        armazenarHistorico(maquina, turno, quantidadeProducao, tempoProducao, quantidadeSucata, oee);
-        atualizarTabelaHistorico();
-        atualizarGraficoOEE(maquina);
-    }
-});
-
-// Função de validação de entradas
-function validateInputs(quantidadeProducao, tempoProducao, quantidadeSucata) {
-    if (isNaN(quantidadeProducao) || isNaN(tempoProducao) || isNaN(quantidadeSucata)) {
-        alert("Por favor, preencha todos os campos corretamente!");
-        return false;
-    }
-    if (quantidadeProducao <= 0 || tempoProducao <= 0 || quantidadeSucata < 0) {
-        alert("Valores inválidos! Verifique os dados de produção.");
-        return false;
-    }
-    return true;
-}
-
-// Função de cálculo de OEE
-function calcularOEE(quantidadeProducao, tempoProducao, quantidadeSucata) {
-    const tempoPlanejado = 480; // Exemplo de tempo planejado em minutos
-    const capacidadeMaxima = 1000; // Capacidade máxima de produção
-
-    const disponibilidade = (tempoProducao / tempoPlanejado) * 100;
-    const performance = (quantidadeProducao / capacidadeMaxima) * 100;
-    const qualidade = ((quantidadeProducao - quantidadeSucata) / quantidadeProducao) * 100;
-
-    return (disponibilidade * performance * qualidade) / 10000;
-}
-
-// Armazenar histórico localmente
-function armazenarHistorico(maquina, turno, quantidadeProducao, tempoProducao, quantidadeSucata, oee) {
-    maquinas[maquina].push({
-        turno,
-        quantidadeProducao,
-        tempoProducao,
-        quantidadeSucata,
-        oee
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', function() {
+        inicializarGraficos();
+        carregarHistorico();
     });
-}
 
-// Atualizar tabela de histórico
-function atualizarTabelaHistorico() {
-    const tbody = document.getElementById('historyTable').getElementsByTagName('tbody')[0];
-    tbody.innerHTML = '';
+    // Evento de cálculo de OEE
+    document.getElementById('calcularOEE').addEventListener('click', function() {
+        if (validarEntradas()) {
+            const dados = coletarDados();
+            const resultados = calcularOEE(dados);
+            exibirResultados(resultados);
+            atualizarGraficoOEE(resultados);
+            gerarAnaliseRecomendacoes(resultados);
+            salvarHistorico(dados, resultados);
+            atualizarTabelaHistorico();
+            atualizarGraficoTendencias();
+        }
+    });
 
-    for (let maquina in maquinas) {
-        maquinas[maquina].forEach(entry => {
-            const row = tbody.insertRow();
-            row.insertCell(0).innerText = maquina;
-            row.insertCell(1).innerText = entry.turno;
-            row.insertCell(2).innerText = entry.quantidadeProducao;
-            row.insertCell(3).innerText = entry.tempoProducao;
-            row.insertCell(4).innerText = entry.quantidadeSucata;
-            row.insertCell(5).innerText = `${entry.oee.toFixed(2)}%`;
+    // Funções auxiliares
+    function validarEntradas() {
+        const campos = ['maquinaSelect', 'turnoSelect', 'quantidadeProducao', 'tempoProducao', 'quantidadeSucata', 'tempoPlanejado', 'capacidadeMaxima'];
+        let valido = true;
+        campos.forEach(campo => {
+            const elemento = document.getElementById(campo);
+            if (!elemento.value) {
+                elemento.classList.add('border-red-500');
+                valido = false;
+            } else {
+                elemento.classList.remove('border-red-500');
+            }
         });
+        if (!valido) alert("Por favor, preencha todos os campos corretamente.");
+        return valido;
     }
-}
 
-// Inicializar gráfico de OEE
-function atualizarGraficoOEE(maquina) {
-    const maquinaData = maquinas[maquina];
-    const labels = maquinaData.map(data => data.turno);
-    const oeeValues = maquinaData.map(data => data.oee);
+    function coletarDados() {
+        return {
+            maquina: document.getElementById('maquinaSelect').value,
+            turno: document.getElementById('turnoSelect').value,
+            quantidadeProducao: parseFloat(document.getElementById('quantidadeProducao').value),
+            tempoProducao: parseFloat(document.getElementById('tempoProducao').value),
+            quantidadeSucata: parseFloat(document.getElementById('quantidadeSucata').value),
+            tempoPlanejado: parseFloat(document.getElementById('tempoPlanejado').value),
+            capacidadeMaxima: parseFloat(document.getElementById('capacidadeMaxima').value)
+        };
+    }
 
-    if (oeeChart) oeeChart.destroy();
+    function calcularOEE(dados) {
+        const disponibilidade = (dados.tempoProducao / dados.tempoPlanejado) * 100;
+        const performance = (dados.quantidadeProducao / dados.capacidadeMaxima) * 100;
+        const qualidade = ((dados.quantidadeProducao - dados.quantidadeSucata) / dados.quantidadeProducao) * 100;
+        const oee = (disponibilidade * performance * qualidade) / 10000;
 
-    const ctx = document.getElementById('oeeChart').getContext('2d');
-    oeeChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels,
-            datasets: [{
-                label: 'OEE (%)',
-                data: oeeValues,
-                backgroundColor: 'rgba(26, 188, 156, 0.2)',
-                borderColor: '#16a085',
-                borderWidth: 2,
-                pointStyle: 'circle',
-                pointRadius: 5
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        color: '#ecf0f1',
-                        callback: function(value) { return value + '%'; }
-                    }
-                }
+        return {
+            disponibilidade: disponibilidade.toFixed(2),
+            performance: performance.toFixed(2),
+            qualidade: qualidade.toFixed(2),
+            oee: oee.toFixed(2)
+        };
+    }
+
+    function exibirResultados(resultados) {
+        document.getElementById('disponibilidade').textContent = `${resultados.disponibilidade}%`;
+        document.getElementById('performance').textContent = `${resultados.performance}%`;
+        document.getElementById('qualidade').textContent = `${resultados.qualidade}%`;
+        document.getElementById('oeeTotal').textContent = `${resultados.oee}%`;
+    }
+
+    function inicializarGraficos() {
+        const ctxOEE = document.getElementById('oeeChart').getContext('2d');
+        oeeChart = new Chart(ctxOEE, {
+            type: 'doughnut',
+            data: {
+                labels: ['Disponibilidade', 'Performance', 'Qualidade'],
+                datasets: [{
+                    data: [0, 0, 0],
+                    backgroundColor: ['#4CAF50', '#2196F3', '#FFC107']
+                }]
             },
-            plugins: {
-                legend: {
-                    display: true,
-                    labels: {
-                        color: '#ecf0f1'
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `OEE: ${context.raw.toFixed(2)}%`;
-                        }
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Componentes do OEE'
                     }
                 }
             }
-        }
-    });
-}
+        });
 
+        const ctxTendencias = document.getElementById('tendenciasChart').getContext('2d');
+        tendenciasChart = new Chart(ctxTendencias, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'OEE',
+                    data: [],
+                    borderColor: '#4CAF50',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Tendência de OEE'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+    }
+
+    function atualizarGraficoOEE(resultados) {
+        oeeChart.data.datasets[0].data = [
+            resultados.disponibilidade,
+            resultados.performance,
+            resultados.qualidade
+        ];
+        oeeChart.update();
+    }
+
+    function gerarAnaliseRecomendacoes(resultados) {
+        const analiseElement = document.getElementById('analiseRecomendacoes');
+        analiseElement.innerHTML = '';
+
+        const addAnalise = (titulo, valor, limiar, recomendacao) => {
+            const div = document.createElement('div');
+            div.innerHTML = `
+                <h3 class="font-semibold">${titulo}: ${valor}%</h3>
+                <p>${parseFloat(valor) < limiar ? 'Abaixo do esperado. ' + recomendacao : 'Dentro do esperado.'}</p>
+            `;
+            analiseElement.appendChild(div);
+        };
+
+        addAnalise('Disponibilidade', resultados.disponibilidade, 90, 'Verifique tempos de setup e paradas não planejadas.');
+        addAnalise('Performance', resultados.performance, 95, 'Analise a velocidade de operação e pequenas paradas.');
+        addAnalise('Qualidade', resultados.qualidade, 99, 'Revise os processos de controle de qualidade.');
+
+        const oeeValor = parseFloat(resultados.oee);
+        let classificacao, recomendacao;
+
+        if (oeeValor < 65) {
+            classificacao = 'Inaceitável';
+            recomendacao = 'Necessita de melhorias urgentes em todos os aspectos.';
+        } else if (oeeValor < 75) {
+            classificacao = 'Regular';
+            recomendacao = 'Há espaço significativo para melhorias.';
+        } else if (oeeValor < 85) {
+            classificacao = 'Aceitável';
+            recomendacao = 'Bom, mas ainda pode ser melhorado.';
+        } else if (oeeValor < 95) {
+            classificacao = 'Bom';
+            recomendacao = 'Muito bom. Mantenha o foco em melhorias contínuas.';
+        } else {
+            classificacao = 'Excelente';
+            recomendacao = 'Nível de classe mundial. Mantenha o excelente trabalho!';
+        }
+
+        const div = document.createElement('div');
+        div.innerHTML = `<h3 class="font-semibold mt-4">Análise Geral do OEE: ${resultados.oee}%</h3>
+            <p>Classificação: ${classificacao}</p>
+            <p>${recomendacao}</p>
+        `;
+        analiseElement.appendChild(div);
+    }
+
+    function salvarHistorico(dados, resultados) {
+        historicoOEE.push({
+            data: new Date().toLocaleString(),
+            maquina: dados.maquina,
+            turno: dados.turno,
+            oee: resultados.oee,
+            disponibilidade: resultados.disponibilidade,
+            performance: resultados.performance,
+            qualidade: resultados.qualidade
+        });
+    }
+
+    function atualizarTabelaHistorico() {
+        const tbody = document.querySelector('#historicoTable tbody');
+        tbody.innerHTML = '';
+        historicoOEE.slice().reverse().forEach(entrada => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="p-3">${entrada.data}</td>
+                <td class="p-3">${entrada.maquina}</td>
+                <td class="p-3">${entrada.turno}</td>
+                <td class="p-3">${entrada.oee}%</td>
+                <td class="p-3">${entrada.disponibilidade}%</td>
+                <td class="p-3">${entrada.performance}%</td>
+                <td class="p-3">${entrada.qualidade}%</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function atualizarGraficoTendencias() {
+        const ultimos10 = historicoOEE.slice(-10);
+        tendenciasChart.data.labels = ultimos10.map(entry => entry.data);
+        tendenciasChart.data.datasets[0].data = ultimos10.map(entry => entry.oee);
+        tendenciasChart.update();
+    }
+
+    function carregarHistorico() {
+        const historicoSalvo = localStorage.getItem('historicoOEE');
+        if (historicoSalvo) {
+            historicoOEE = JSON.parse(historicoSalvo);
+            atualizarTabelaHistorico();
+            atualizarGraficoTendencias();
+        }
+    }
+
+    // Função para gerar PDF
+    document.getElementById('gerarPDF').addEventListener('click', function() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        doc.setFontSize(18);
+        doc.text('Relatório de OEE', 105, 15, null, null, 'center');
+        
+        doc.setFontSize(12);
+        doc.text(`Data: ${new Date().toLocaleDateString()}`, 20, 30);
+        doc.text(`Máquina: ${document.getElementById('maquinaSelect').value}`, 20, 40);
+        doc.text(`Turno: ${document.getElementById('turnoSelect').value}`, 20, 50);
+        
+        doc.setFontSize(14);
+        doc.text('Resultados:', 20, 70);
+        doc.setFontSize(12);
+        doc.text(`OEE: ${document.getElementById('oeeTotal').textContent}`, 30, 80);
+        doc.text(`Disponibilidade: ${document.getElementById('disponibilidade').textContent}`, 30, 90);
+        doc.text(`Performance: ${document.getElementById('performance').textContent}`, 30, 100);
+        doc.text(`Qualidade: ${document.getElementById('qualidade').textContent}`, 30, 110);
+        
+        // Adicionar gráfico
+        const chartCanvas = document.getElementById('oeeChart');
+        const chartImage = chartCanvas.toDataURL('image/jpeg', 1.0);
+        doc.addImage(chartImage, 'JPEG', 70, 120, 70, 70);
+        
+        doc.save('relatorio-oee.pdf');
+    });
+
+    // Função para exportar dados CSV
+    document.getElementById('exportarDados').addEventListener('click', function() {
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "Data,Máquina,Turno,OEE,Disponibilidade,Performance,Qualidade\n";
+        
+        historicoOEE.forEach(function(entry) {
+            let row = `${entry.data},${entry.maquina},${entry.turno},${entry.oee},${entry.disponibilidade},${entry.performance},${entry.qualidade}`;
+            csvContent += row + "\n";
+        });
+        
+        var encodedUri = encodeURI(csvContent);
+        var link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "historico_oee.csv");
+        document.body.appendChild(link);
+        link.click();
+    });
+
+    // Salvar histórico no localStorage antes de fechar a página
+    window.addEventListener('beforeunload', function() {
+        localStorage.setItem('historicoOEE', JSON.stringify(historicoOEE));
+    });
     </script>
 </body>
 </html>
