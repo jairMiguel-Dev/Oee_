@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de OEE - ArameSul</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(120deg, #34495e, #2c3e50);
+    color: #ecf0f1;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background: #16a085;
+    padding: 20px;
+    text-align: center;
+}
+
+h1 {
+    margin: 0;
+    font-size: 2.5rem;
+}
+
+.dashboard, .history, .charts {
+    padding: 20px;
+    width: 80%;
+    margin: 20px auto;
+}
+
+.card {
+    background: #2c3e50;
+    border-radius: 10px;
+    padding: 20px;
+    width: 22%;
+    margin: 10px auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, background 0.3s;
+    text-align: center;
+}
+
+.card:hover {
+    transform: scale(1.05);
+    background: #34495e;
+}
+
+input, select, .button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 5px;
+    border: none;
+    transition: background-color 0.3s;
+}
+
+.button {
+    background: #1abc9c;
+    color: #ecf0f1;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.button:hover {
+    background: #16a085;
+}
+
+.oee-result {
+    background: #1abc9c;
+    color: #ecf0f1;
+}
+
+#oee-value {
+    font-size: 2rem;
+}
+
+table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid #16a085;
+}
+
+th, td {
+    padding: 10px;
+    text-align: center;
+}
+
+th {
+    background: #16a085;
+    color: #ecf0f1;
+}
+
+tbody tr:nth-child(odd) {
+    background: #2c3e50;
+}
+
+tbody tr:nth-child(even) {
+    background: #34495e;
+}
+
+canvas {
+    background: #34495e;
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 100%;
+}
+
+@media (max-width: 768px) {
+    .card {
+        width: 90%;
+    }
+
+    .dashboard, .history, .charts {
+        width: 100%;
+        padding: 10px;
+    }
+}
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Sistema de OEE - ArameSul</h1>
+    </header>
+    <main>
+        <section class="dashboard">
+            <!-- Seção de Seleção e Entrada de Dados -->
+            <div class="card">
+                <h2>Selecione a Máquina</h2>
+                <select id="maquinaSelect">
+                    <option value="Maquina 1">Maquina 1</option>
+                    <option value="Maquina 2">Maquina 2</option>
+                    <option value="Maquina 3">Maquina 3</option>
+                </select>
+            </div>
+            <div class="card">
+                <h2>Selecione o Turno</h2>
+                <select id="turnoSelect">
+                    <option value="Manhã">Manhã</option>
+                    <option value="Tarde">Tarde</option>
+                    <option value="Noite">Noite</option>
+                </select>
+            </div>
+            <div class="card">
+                <h2>Produção por Máquina</h2>
+                <input type="number" id="quantidadeProducao" placeholder="Quantidade Produzida">
+            </div>
+            <div class="card">
+                <h2>Tempo de Produção (em minutos)</h2>
+                <input type="number" id="tempoProducao" placeholder="Tempo Efetivo">
+            </div>
+            <div class="card">
+                <h2>Quantidade de Sucatas</h2>
+                <input type="number" id="quantidadeSucata" placeholder="Sucatas Geradas">
+            </div>
+            <div class="card">
+                <button id="calcularOEE" class="button">Calcular OEE</button>
+            </div>
+            <div class="card oee-result">
+                <h2>OEE</h2>
+                <p id="oee-value">0%</p>
+            </div>
+            <div class="card">
+                <button id="gerarPDF" class="button">Gerar Relatório PDF</button>
+            </div>
+        </section>
+
+        <!-- Histórico de OEE -->
+        <section class="history">
+            <h2>Histórico de OEE</h2>
+            <table id="historyTable">
+                <thead>
+                    <tr>
+                        <th>Máquina</th>
+                        <th>Turno</th>
+                        <th>Produção</th>
+                        <th>Tempo</th>
+                        <th>Sucatas</th>
+                        <th>OEE (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dados dinamicamente inseridos aqui -->
+                </tbody>
+            </table>
+        </section>
+        
+        <!-- Gráficos de OEE -->
+        <section class="charts">
+            <canvas id="oeeChart"></canvas>
+        </section>
+    </main>
+    <script src="app.js"></script>
+    <script>
+        // Estrutura de dados para armazenar OEE
+let maquinas = {
+    'Maquina 1': [],
+    'Maquina 2': [],
+    'Maquina 3': []
+};
+
+// Inicialização de gráficos
+let oeeChart = null;
+
+// Função para calcular o OEE
+document.getElementById('calcularOEE').addEventListener('click', function() {
+    const maquina = document.getElementById('maquinaSelect').value;
+    const turno = document.getElementById('turnoSelect').value;
+    const quantidadeProducao = parseFloat(document.getElementById('quantidadeProducao').value);
+    const tempoProducao = parseFloat(document.getElementById('tempoProducao').value);
+    const quantidadeSucata = parseFloat(document.getElementById('quantidadeSucata').value);
+
+    if (validateInputs(quantidadeProducao, tempoProducao, quantidadeSucata)) {
+        const oee = calcularOEE(quantidadeProducao, tempoProducao, quantidadeSucata);
+        document.getElementById('oee-value').innerText = `${oee.toFixed(2)}%`;
+        armazenarHistorico(maquina, turno, quantidadeProducao, tempoProducao, quantidadeSucata, oee);
+        atualizarTabelaHistorico();
+        atualizarGraficoOEE(maquina);
+    }
+});
+
+// Função de validação de entradas
+function validateInputs(quantidadeProducao, tempoProducao, quantidadeSucata) {
+    if (isNaN(quantidadeProducao) || isNaN(tempoProducao) || isNaN(quantidadeSucata)) {
+        alert("Por favor, preencha todos os campos corretamente!");
+        return false;
+    }
+    if (quantidadeProducao <= 0 || tempoProducao <= 0 || quantidadeSucata < 0) {
+        alert("Valores inválidos! Verifique os dados de produção.");
+        return false;
+    }
+    return true;
+}
+
+// Função de cálculo de OEE
+function calcularOEE(quantidadeProducao, tempoProducao, quantidadeSucata) {
+    const tempoPlanejado = 480; // Exemplo de tempo planejado em minutos
+    const capacidadeMaxima = 1000; // Capacidade máxima de produção
+
+    const disponibilidade = (tempoProducao / tempoPlanejado) * 100;
+    const performance = (quantidadeProducao / capacidadeMaxima) * 100;
+    const qualidade = ((quantidadeProducao - quantidadeSucata) / quantidadeProducao) * 100;
+
+    return (disponibilidade * performance * qualidade) / 10000;
+}
+
+// Armazenar histórico localmente
+function armazenarHistorico(maquina, turno, quantidadeProducao, tempoProducao, quantidadeSucata, oee) {
+    maquinas[maquina].push({
+        turno,
+        quantidadeProducao,
+        tempoProducao,
+        quantidadeSucata,
+        oee
+    });
+}
+
+// Atualizar tabela de histórico
+function atualizarTabelaHistorico() {
+    const tbody = document.getElementById('historyTable').getElementsByTagName('tbody')[0];
+    tbody.innerHTML = '';
+
+    for (let maquina in maquinas) {
+        maquinas[maquina].forEach(entry => {
+            const row = tbody.insertRow();
+            row.insertCell(0).innerText = maquina;
+            row.insertCell(1).innerText = entry.turno;
+            row.insertCell(2).innerText = entry.quantidadeProducao;
+            row.insertCell(3).innerText = entry.tempoProducao;
+            row.insertCell(4).innerText = entry.quantidadeSucata;
+            row.insertCell(5).innerText = `${entry.oee.toFixed(2)}%`;
+        });
+    }
+}
+
+// Inicializar gráfico de OEE
+function atualizarGraficoOEE(maquina) {
+    const maquinaData = maquinas[maquina];
+    const labels = maquinaData.map(data => data.turno);
+    const oeeValues = maquinaData.map(data => data.oee);
+
+    if (oeeChart) oeeChart.destroy();
+
+    const ctx = document.getElementById('oeeChart').getContext('2d');
+    oeeChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: 'OEE (%)',
+                data: oeeValues,
+                backgroundColor: 'rgba(26, 188, 156, 0.2)',
+                borderColor: '#16a085',
+                borderWidth: 2,
+                pointStyle: 'circle',
+                pointRadius: 5
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: '#ecf0f1',
+                        callback: function(value) { return value + '%'; }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: {
+                        color: '#ecf0f1'
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `OEE: ${context.raw.toFixed(2)}%`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+    </script>
+</body>
+</html>
